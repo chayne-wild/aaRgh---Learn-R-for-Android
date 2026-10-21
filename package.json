@@ -1,0 +1,11 @@
+{
+  "name": "aargh-android",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "build": "node verify-build.mjs",
+    "lint": "node verify-build.mjs"
+  }
+}

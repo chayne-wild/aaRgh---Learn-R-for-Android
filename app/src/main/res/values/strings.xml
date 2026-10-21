@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">aaRgh</string>
+    <string name="subtitle_offline_r">100% Offline Base R &amp; swirl</string>
+    <string name="cmd_swirl">swirl()</string>
+    <string name="cmd_play">play()</string>
+    <string name="cmd_nxt">nxt()</string>
+    <string name="cmd_skip">skip()</string>
+    <string name="cmd_main">main()</string>
+    <string name="cmd_bye">bye()</string>
+    <string name="action_plot">Plot</string>
+    <string name="action_keys">Keys</string>
+    <string name="action_theme">Theme</string>
+    <string name="action_send">Send</string>
+    <string name="action_close">Close</string>
+    <string name="action_reset_zoom">Reset Zoom</string>
+    <string name="placeholder_r_input">Type or swipe R command…</string>
+    <string name="continue_prompt">… Tap here or press Enter to Continue …</string>
+    <string name="plot_modal_title">R Graphics Output (Pinch to Zoom)</string>
+    <string name="boot_initializing">Initializing offline Base R (webR) &amp; loading swirl courses…</string>
+    <string name="cd_theme_toggle">Toggle Light or Dark Mode</string>
+    <string name="cd_keys_toggle">Toggle Operator Symbol Row</string>
+    <string name="cd_plot_button">Open R Plot Output Modal</string>
+</resources>

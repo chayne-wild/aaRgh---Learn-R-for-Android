@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>aaRgh — Offline R &amp; swirl</title>
+  <style>
+    :root,
+    [data-theme="light"] {
+      --bg: #F8FAFC;
+      --panel: #FFFFFF;
+      --border: #CBD5E1;
+      --text: #0F172A;
+      --muted: #475569;
+      --accent: #0284C7;
+      --accent-fg: #FFFFFF;
+      --cmd: #047857;
+      --err: #DC2626;
+      --chip-bg: #F1F5F9;
+      --var-chip-bg: #E0F2FE;
+      --var-chip-text: #0369A1;
+      --var-chip-border: #7DD3FC;
+      --op-bar-bg: #F1F5F9;
+      --continue-bg: #E0F2FE;
+      --badge-ok-bg: #DCFCE7;
+      --badge-ok-text: #166534;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0F1419;
+      --panel: #182026;
+      --border: #2A3540;
+      --text: #E6EDF3;
+      --muted: #8B949E;
+      --accent: #38BDF8;
+      --accent-fg: #0F172A;
+      --cmd: #7EE787;
+      --err: #FF7B72;
+      --chip-bg: #212C35;
+      --var-chip-bg: #1F2D3D;
+      --var-chip-text: #79C0FF;
+      --var-chip-border: #30465E;
+      --op-bar-bg: #12181F;
+      --continue-bg: #1D2D3E;
+      --badge-ok-bg: #132F20;
+      --badge-ok-text: #7EE787;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      height: 100dvh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Single-row non-wrapping Top App Bar */
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    header::-webkit-scrollbar { display: none; }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .sab-badge {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: var(--badge-ok-bg);
+      color: var(--badge-ok-text);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .top-actions::-webkit-scrollbar { display: none; }
+
+    .top-btn {
+      background: var(--chip-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      min-height: 34px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    .top-btn:active {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+    }
+    .top-btn.plot-ready {
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .top-btn.active-toggle {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+    }
+
+    /* Console Transcript */
+    #transcript {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 10px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .line-stdout {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+    }
+    .line-stderr {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--err);
+    }
+    .line-cmd {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--cmd);
+      font-weight: 700;
+    }
+
+    /* Continue bar when swirl pauses at ... */
+    #continue-bar {
+      display: none;
+      background: var(--continue-bg);
+      border-top: 1px solid var(--accent);
+      padding: 8px 12px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--accent);
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    /* Sticky Bottom Dock: Var Chips + Input + Operator Bar */
+    .bottom-dock {
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    #var-chips {
+      display: flex;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 5px 10px;
+      border-bottom: 1px solid var(--border);
+      scrollbar-width: none;
+    }
+    #var-chips:empty {
+      display: none;
+    }
+    #var-chips::-webkit-scrollbar { display: none; }
+
+    .var-chip {
+      background: var(--var-chip-bg);
+      color: var(--var-chip-text);
+      border: 1px solid var(--var-chip-border);
+      border-radius: 999px;
+      padding: 4px 11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    .var-chip:active {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      padding: 6px 10px;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+    }
+
+    #prompt-label {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 1rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    #r-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    #r-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.18);
+    }
+
+    #send-btn {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      min-height: 36px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    /* Primitive Operator Toggle Bar (Single-Row Non-Wrapping) */
+    .op-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      gap: 5px;
+      padding: 6px 8px;
+      overflow-x: auto;
+      background: var(--op-bar-bg);
+      border-top: 1px solid var(--border);
+      scrollbar-width: none;
+    }
+    .op-bar::-webkit-scrollbar { display: none; }
+    .op-bar.collapsed {
+      display: none !important;
+    }
+
+    .mode-toggle {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border: none;
+      border-radius: 5px;
+      padding: 6px 9px;
+      height: 34px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 800;
+      font-size: 0.78rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    #op-keys-container {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      gap: 4px;
+    }
+
+    .op-key {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .op-key:active {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+    }
+
+    /* Landscape Orientation Compaction */
+    @media (orientation: landscape), (max-height: 480px) {
+      header {
+        padding: 3px 8px;
+        gap: 6px;
+      }
+      .top-btn {
+        padding: 3px 8px;
+        min-height: 28px;
+        font-size: 0.74rem;
+      }
+      #transcript {
+        padding: 6px 10px;
+        font-size: 0.86rem;
+        gap: 4px;
+      }
+      #var-chips {
+        padding: 3px 8px;
+      }
+      .var-chip {
+        padding: 2px 8px;
+        font-size: 0.74rem;
+      }
+      .input-row {
+        padding: 4px 8px;
+        gap: 6px;
+      }
+      #r-input {
+        padding: 5px 8px;
+        font-size: 0.88rem;
+      }
+      #send-btn {
+        padding: 5px 12px;
+        min-height: 30px;
+        font-size: 0.82rem;
+      }
+      .op-bar {
+        padding: 3px 8px;
+      }
+      .mode-toggle,
+      .op-key {
+        height: 28px;
+        min-width: 30px;
+        font-size: 0.84rem;
+      }
+    }
+
+    /* Pop-Out Plot Modal Window with Pinch-to-Zoom */
+    #plot-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.78);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+    .modal-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-width: 680px;
+      max-height: 92dvh;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+    .modal-header {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
+    .modal-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+    }
+    #plot-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-height: calc(92dvh - 54px);
+      background: #FFFFFF;
+      overflow: hidden;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+    }
+    #plot-viewport:active {
+      cursor: grabbing;
+    }
+    #plot-canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #FFFFFF;
+      display: block;
+      transform-origin: center center;
+      will-change: transform;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-group">
+      <div class="brand">aaRgh</div>
+      <span class="sab-badge" id="isolation-badge" title="Cross-Origin Isolated SharedArrayBuffer Status">OFFLINE</span>
+    </div>
+    <div class="top-actions" role="toolbar" aria-label="R and swirl actions">
+      <button class="top-btn" type="button" data-cmd="swirl()">swirl()</button>
+      <button class="top-btn" type="button" data-cmd="play()">play()</button>
+      <button class="top-btn" type="button" data-cmd="nxt()">nxt()</button>
+      <button class="top-btn" type="button" data-cmd="skip()">skip()</button>
+      <button class="top-btn" type="button" data-cmd="main()">main()</button>
+      <button class="top-btn" type="button" data-cmd="bye()">bye()</button>
+      <button class="top-btn" type="button" id="plot-btn" onclick="togglePlotModal(true)">Plot</button>
+      <button class="top-btn active-toggle" type="button" id="keys-btn" onclick="toggleKeysBar()">Keys</button>
+      <button class="top-btn" type="button" id="theme-btn" onclick="toggleTheme()">Theme</button>
+    </div>
+  </header>
+
+  <div id="transcript" role="log" aria-live="polite">
+    <div class="line-stdout" id="boot-status">Initializing offline Base R (webR) &amp; loading swirl courses...</div>
+  </div>
+
+  <div id="continue-bar" onclick="sendCommand('')">... Tap here or press Enter to Continue ...</div>
+
+  <div class="bottom-dock">
+    <div id="var-chips" aria-label="Recent R identifiers"></div>
+    <div class="input-row">
+      <span id="prompt-label">&gt;</span>
+      <input
+        id="r-input"
+        type="text"
+        autocapitalize="none"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        inputmode="text"
+        enterkeyhint="send"
+        placeholder="Type or swipe R command..."
+      />
+      <button id="send-btn" type="button" onclick="submitInput()">Send</button>
+    </div>
+    <div class="op-bar" id="op-bar">
+      <button class="mode-toggle" id="mode-btn" type="button">[R]</button>
+      <div id="op-keys-container"></div>
+    </div>
+  </div>
+
+  <div id="plot-modal" onclick="if(event.target===this) togglePlotModal(false)">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>R Graphics Output</span>
+        <div class="modal-controls">
+          <button class="top-btn" type="button" onclick="adjustPlotZoom(-0.25)">-</button>
+          <button class="top-btn" type="button" id="zoom-readout" onclick="resetPlotZoom()">100%</button>
+          <button class="top-btn" type="button" onclick="adjustPlotZoom(0.25)">+</button>
+          <button class="top-btn" type="button" onclick="togglePlotModal(false)">Close</button>
+        </div>
+      </div>
+      <div id="plot-viewport">
+        <canvas id="plot-canvas" width="1008" height="1008"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Console } from './webr/webr.mjs';
+
+    const R_KEYS    = ['<-', '|>', '<', '-', '|', '>', '$', '(', ')', '[', ']', '"', "'", ',', ':', '?', '_'];
+    const MATH_KEYS = ['<', '>', '=', '!', '&', '|', '%', '*', '+', '-', '/', '^', '~'];
+    let currentMode = 'R';
+    let keysBarVisible = true;
+    let isImeComposing = false;
+
+    const transcript = document.getElementById('transcript');
+    const rInput = document.getElementById('r-input');
+    const promptLabel = document.getElementById('prompt-label');
+    const continueBar = document.getElementById('continue-bar');
+    const varChips = document.getElementById('var-chips');
+    const opBar = document.getElementById('op-bar');
+    const keysBtn = document.getElementById('keys-btn');
+    const themeBtn = document.getElementById('theme-btn');
+    const modeBtn = document.getElementById('mode-btn');
+    const plotModal = document.getElementById('plot-modal');
+    const plotViewport = document.getElementById('plot-viewport');
+    const plotCanvas = document.getElementById('plot-canvas');
+    const plotBtn = document.getElementById('plot-btn');
+    const zoomReadout = document.getElementById('zoom-readout');
+    const isolationBadge = document.getElementById('isolation-badge');
+    const lastBacktickedTokens = new Set();
+
+    // Update SAB / Cross-Origin Isolation badge
+    if (window.crossOriginIsolated) {
+      isolationBadge.textContent = 'SAB OK';
+    } else {
+      isolationBadge.textContent = 'OFFLINE';
+    }
+
+    // 1. Light Mode Default + Dark Mode Toggle persisted in SharedPreferences / localStorage
+    function getStoredTheme() {
+      try {
+        if (window.AndroidBridge && typeof window.AndroidBridge.getThemeMode === 'function') {
+          const nativeTheme = window.AndroidBridge.getThemeMode();
+          if (nativeTheme === 'light' || nativeTheme === 'dark') return nativeTheme;
+        }
+      } catch (e) {}
+      try {
+        const stored = localStorage.getItem('aargh_theme');
+        if (stored === 'light' || stored === 'dark') return stored;
+      } catch (e) {}
+      return 'light'; // Default to clean Light Mode
+    }
+
+    function applyTheme(theme) {
+      const normalized = theme === 'dark' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', normalized);
+      themeBtn.textContent = normalized === 'dark' ? 'Light' : 'Dark';
+      try {
+        localStorage.setItem('aargh_theme', normalized);
+      } catch (e) {}
+      try {
+        if (window.AndroidBridge && typeof window.AndroidBridge.setThemeMode === 'function') {
+          window.AndroidBridge.setThemeMode(normalized);
+        }
+      } catch (e) {}
+    }
+
+    window.toggleTheme = () => {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    };
+
+    applyTheme(getStoredTheme());
+
+    // 2. [Keys] Bar Collapse/Expand Toggle
+    function applyKeysVisibility(visible) {
+      keysBarVisible = visible;
+      if (keysBarVisible) {
+        opBar.classList.remove('collapsed');
+        keysBtn.classList.add('active-toggle');
+      } else {
+        opBar.classList.add('collapsed');
+        keysBtn.classList.remove('active-toggle');
+      }
+      try {
+        localStorage.setItem('aargh_keys_visible', keysBarVisible ? '1' : '0');
+      } catch (e) {}
+    }
+
+    window.toggleKeysBar = () => {
+      applyKeysVisibility(!keysBarVisible);
+    };
+
+    try {
+      const savedKeys = localStorage.getItem('aargh_keys_visible');
+      if (savedKeys !== null) {
+        applyKeysVisibility(savedKeys === '1');
+      }
+    } catch (e) {}
+
+    // Top bar command buttons
+    document.querySelectorAll('.top-btn[data-cmd]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const cmd = btn.getAttribute('data-cmd');
+        if (cmd) window.sendCommand(cmd);
+      });
+    });
+
+    // 3. Native Phone Keyboard, Gboard & Swipe/Glide Typing Integration
+    // Never interrupt IME composition (isComposing)
+    function normalizeSmartQuotesIfIdle() {
+      if (isImeComposing) return;
+      const val = rInput.value;
+      if (!/[\u2018\u2019\u201C\u201D]/.test(val)) return;
+      const start = rInput.selectionStart ?? val.length;
+      const end = rInput.selectionEnd ?? val.length;
+      rInput.value = val.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+      try {
+        rInput.setSelectionRange(start, end);
+      } catch (e) {}
+    }
+
+    rInput.addEventListener('compositionstart', () => {
+      isImeComposing = true;
+    });
+
+    rInput.addEventListener('compositionend', () => {
+      isImeComposing = false;
+      normalizeSmartQuotesIfIdle();
+    });
+
+    rInput.addEventListener('input', (e) => {
+      if (e.isComposing || isImeComposing) return;
+      normalizeSmartQuotesIfIdle();
+    });
+
+    rInput.addEventListener('keydown', (e) => {
+      if (e.isComposing || isImeComposing || e.keyCode === 229) return;
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        window.submitInput();
+      }
+    });
+
+    // Keep keyboard focused when tapping mode toggle, operator keys, or variable chips
+    function bindFocusPreservingTap(element, callback) {
+      let handledByPointerDown = false;
+      element.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        handledByPointerDown = true;
+        callback();
+      });
+      element.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+      });
+      element.addEventListener('click', (e) => {
+        if (handledByPointerDown) {
+          handledByPointerDown = false;
+          return;
+        }
+        callback();
+      });
+    }
+
+    bindFocusPreservingTap(modeBtn, () => {
+      currentMode = currentMode === 'R' ? 'Math' : 'R';
+      modeBtn.textContent = `[${currentMode}]`;
+      renderOpKeys();
+    });
+
+    function renderOpKeys() {
+      const container = document.getElementById('op-keys-container');
+      container.innerHTML = '';
+      const keys = currentMode === 'R' ? R_KEYS : MATH_KEYS;
+      keys.forEach((k) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'op-key';
+        btn.textContent = k;
+        bindFocusPreservingTap(btn, () => {
+          window.insertAtCursor(k);
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    window.insertAtCursor = (text) => {
+      const start = rInput.selectionStart ?? rInput.value.length;
+      const end = rInput.selectionEnd ?? rInput.value.length;
+      const val = rInput.value;
+      rInput.value = val.slice(0, start) + text + val.slice(end);
+      const nextPos = start + text.length;
+      try {
+        rInput.setSelectionRange(nextPos, nextPos);
+      } catch (e) {}
+      rInput.focus({ preventScroll: true });
+    };
+
+    function renderVarChips() {
+      varChips.innerHTML = '';
+      Array.from(lastBacktickedTokens).slice(-14).forEach((token) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'var-chip';
+        chip.textContent = token;
+        bindFocusPreservingTap(chip, () => {
+          window.insertAtCursor(token);
+        });
+        varChips.appendChild(chip);
+      });
+    }
+
+    function appendLine(text, cls = 'line-stdout') {
+      const div = document.createElement('div');
+      div.className = cls;
+      div.textContent = text;
+      transcript.appendChild(div);
+      transcript.scrollTop = transcript.scrollHeight;
+
+      // Extract `identifier` or 'identifier' mentioned in swirl prompts for 1-tap chips
+      const matches = text.match(/[`']([a-zA-Z0-9_.]+)[`']/g);
+      if (matches) {
+        matches.forEach((m) => {
+          const clean = m.slice(1, -1);
+          if (clean.length > 1 && !clean.includes(' ')) {
+            lastBacktickedTokens.add(clean);
+          }
+        });
+        renderVarChips();
+      }
+    }
+
+    renderOpKeys();
+
+    // 4. Pop-Out Plot Modal with Pinch-to-Zoom & Pan
+    let plotScale = 1;
+    let plotTranslateX = 0;
+    let plotTranslateY = 0;
+    const activePointers = new Map();
+    let initialPinchDistance = null;
+    let initialPinchScale = 1;
+    let lastPanX = null;
+    let lastPanY = null;
+
+    function updatePlotTransform() {
+      if (plotScale <= 1) {
+        plotScale = 1;
+        plotTranslateX = 0;
+        plotTranslateY = 0;
+      }
+      plotCanvas.style.transform = `translate(${plotTranslateX}px, ${plotTranslateY}px) scale(${plotScale})`;
+      zoomReadout.textContent = `${Math.round(plotScale * 100)}%`;
+    }
+
+    window.resetPlotZoom = () => {
+      plotScale = 1;
+      plotTranslateX = 0;
+      plotTranslateY = 0;
+      updatePlotTransform();
+    };
+
+    window.adjustPlotZoom = (delta) => {
+      plotScale = Math.min(5, Math.max(1, plotScale + delta));
+      updatePlotTransform();
+    };
+
+    window.togglePlotModal = (show) => {
+      plotModal.style.display = show ? 'flex' : 'none';
+      if (show) {
+        updatePlotTransform();
+      }
+    };
+
+    function getPointerDistance(p1, p2) {
+      return Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+    }
+
+    plotViewport.addEventListener('pointerdown', (e) => {
+      activePointers.set(e.pointerId, e);
+      plotViewport.setPointerCapture(e.pointerId);
+      if (activePointers.size === 2) {
+        const pts = Array.from(activePointers.values());
+        initialPinchDistance = getPointerDistance(pts[0], pts[1]);
+        initialPinchScale = plotScale;
+      } else if (activePointers.size === 1) {
+        lastPanX = e.clientX;
+        lastPanY = e.clientY;
+      }
+    });
+
+    plotViewport.addEventListener('pointermove', (e) => {
+      if (!activePointers.has(e.pointerId)) return;
+      activePointers.set(e.pointerId, e);
+      if (activePointers.size === 2 && initialPinchDistance) {
+        const pts = Array.from(activePointers.values());
+        const dist = getPointerDistance(pts[0], pts[1]);
+        plotScale = Math.min(5, Math.max(1, initialPinchScale * (dist / initialPinchDistance)));
+        updatePlotTransform();
+      } else if (activePointers.size === 1 && plotScale > 1 && lastPanX !== null && lastPanY !== null) {
+        plotTranslateX += e.clientX - lastPanX;
+        plotTranslateY += e.clientY - lastPanY;
+        lastPanX = e.clientX;
+        lastPanY = e.clientY;
+        updatePlotTransform();
+      }
+    });
+
+    function handlePointerUp(e) {
+      activePointers.delete(e.pointerId);
+      if (activePointers.size < 2) {
+        initialPinchDistance = null;
+      }
+      if (activePointers.size === 1) {
+        const remaining = Array.from(activePointers.values())[0];
+        lastPanX = remaining.clientX;
+        lastPanY = remaining.clientY;
+      } else {
+        lastPanX = null;
+        lastPanY = null;
+      }
+    }
+
+    plotViewport.addEventListener('pointerup', handlePointerUp);
+    plotViewport.addEventListener('pointercancel', handlePointerUp);
+    plotViewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.2 : -0.2;
+      window.adjustPlotZoom(delta);
+    }, { passive: false });
+
+    // Initialize white plot canvas
+    {
+      const ctx = plotCanvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, plotCanvas.width, plotCanvas.height);
+    }
+
+    // 5. Initialize webR Console pointing to local ./webr/ folder
+    const webRConsole = new Console({
+      stdout: (line) => appendLine(line, 'line-stdout'),
+      stderr: (line) => appendLine(line, 'line-stderr'),
+      prompt: (p) => {
+        const trimmed = p.trim() || '>';
+        promptLabel.textContent = trimmed;
+        if (trimmed === '...') {
+          continueBar.style.display = 'block';
+        } else {
+          continueBar.style.display = 'none';
+        }
+        transcript.scrollTop = transcript.scrollHeight;
+      },
+      canvasImage: (img) => {
+        const ctx = plotCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        plotBtn.classList.add('plot-ready');
+        window.togglePlotModal(true);
+      },
+      canvasNewPage: () => {
+        const ctx = plotCanvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, plotCanvas.width, plotCanvas.height);
+      }
+    }, {
+      baseUrl: './webr/'
+    });
+
+    window.sendCommand = (cmd) => {
+      appendLine(`${promptLabel.textContent} ${cmd}`, 'line-cmd');
+      continueBar.style.display = 'none';
+      webRConsole.stdin(cmd + '\n');
+    };
+
+    window.submitInput = () => {
+      normalizeSmartQuotesIfIdle();
+      const cmd = rInput.value;
+      rInput.value = '';
+      window.sendCommand(cmd);
+    };
+
+    async function ensureDirRecursive(FS, dirPath) {
+      const parts = dirPath.split('/').filter(Boolean);
+      let current = '';
+      for (const part of parts) {
+        current += '/' + part;
+        try {
+          await FS.mkdir(current);
+        } catch (e) {}
+      }
+    }
+
+    // Unpack POSIX ustar aargh_payload.tar into /persist/aargh_bundle
+    async function unpackTarArchive(FS, arrayBuffer, baseDir) {
+      const bytes = new Uint8Array(arrayBuffer);
+      const decoder = new TextDecoder('utf-8');
+      let offset = 0;
+      let count = 0;
+
+      const readCString = (start, length) => {
+        let end = start;
+        const max = start + length;
+        while (end < max && bytes[end] !== 0) end++;
+        return decoder.decode(bytes.subarray(start, end)).trim();
+      };
+
+      while (offset + 512 <= bytes.length) {
+        const name = readCString(offset, 100);
+        if (!name) {
+          offset += 512;
+          continue;
+        }
+        const sizeOctal = readCString(offset + 124, 12);
+        const size = parseInt(sizeOctal, 8) || 0;
+        const typeFlag = bytes[offset + 156];
+        const prefix = readCString(offset + 345, 155);
+        const fullRelPath = (prefix ? `${prefix}/${name}` : name).replace(/^\.?\//, '');
+        const targetPath = `${baseDir}/${fullRelPath}`.replace(/\/+/g, '/');
+
+        offset += 512;
+
+        if (typeFlag === 53 || targetPath.endsWith('/')) {
+          await ensureDirRecursive(FS, targetPath.replace(/\/$/, ''));
+        } else if (typeFlag === 0 || typeFlag === 48) {
+          const lastSlash = targetPath.lastIndexOf('/');
+          if (lastSlash > 0) {
+            await ensureDirRecursive(FS, targetPath.slice(0, lastSlash));
+          }
+          const fileData = bytes.slice(offset, offset + size);
+          await FS.writeFile(targetPath, fileData);
+          count++;
+        }
+
+        offset += Math.ceil(size / 512) * 512;
+      }
+      return count;
+    }
+
+    async function populateBundleViaManifest(FS, baseDir) {
+      const manifestResp = await fetch('./vfs_manifest.json');
+      const files = await manifestResp.json();
+      for (const relPath of files) {
+        const targetPath = `${baseDir}/${relPath}`;
+        const lastSlash = targetPath.lastIndexOf('/');
+        if (lastSlash > 0) {
+          await ensureDirRecursive(FS, targetPath.slice(0, lastSlash));
+        }
+        const fileResp = await fetch('./' + relPath);
+        const buf = new Uint8Array(await fileResp.arrayBuffer());
+        await FS.writeFile(targetPath, buf);
+      }
+      const engineResp = await fetch('./swirl_offline_engine.R');
+      const engineBuf = new Uint8Array(await engineResp.arrayBuffer());
+      await FS.writeFile(`${baseDir}/swirl_offline_engine.R`, engineBuf);
+    }
+
+    async function bootAaRgh() {
+      const bootStatus = document.getElementById('boot-status');
+      try {
+        await webRConsole.webR.init();
+        const FS = webRConsole.webR.FS;
+
+        // Mount /persist via Emscripten IDBFS for persistent swirl progress & workspace
+        try { await FS.mkdir('/persist'); } catch (e) {}
+        try {
+          await FS.mount('IDBFS', {}, '/persist');
+          await FS.syncfs(true);
+        } catch (idbErr) {
+          console.warn('IDBFS mount warning (continuing with VFS):', idbErr);
+        }
+
+        try { await FS.mkdir('/persist/aargh_bundle'); } catch (e) {}
+        try { await FS.mkdir('/persist/user_data'); } catch (e) {}
+
+        // Load from pre-built aargh_payload.tar (with fallback to vfs_manifest.json)
+        let loadedFromTar = false;
+        try {
+          const tarResp = await fetch('./aargh_payload.tar');
+          if (tarResp.ok) {
+            const tarBuf = await tarResp.arrayBuffer();
+            const extractedCount = await unpackTarArchive(FS, tarBuf, '/persist/aargh_bundle');
+            if (extractedCount > 0) {
+              loadedFromTar = true;
+            }
+          }
+        } catch (tarErr) {
+          console.warn('Fallback to vfs_manifest.json:', tarErr);
+        }
+
+        if (!loadedFromTar) {
+          await populateBundleViaManifest(FS, '/persist/aargh_bundle');
+        }
+
+        try { await FS.syncfs(false); } catch (e) {}
+
+        bootStatus.textContent = 'aaRgh Offline R Engine Ready.';
+
+        // Configure graphics device, persistent swirl_data_dir, & load swirl_offline_engine.R
+        await webRConsole.webR.evalRVoid(`
+          options(
+            device = webr::canvas,
+            swirl_data_dir = "/persist/user_data",
+            swirl_courses_dir = "/persist/aargh_bundle/courses"
+          )
+          .aargh_root <- "/persist/aargh_bundle"
+          source("/persist/aargh_bundle/swirl_offline_engine.R")
+          if (file.exists("/persist/.RData")) {
+            try(load("/persist/.RData", envir = .GlobalEnv), silent = TRUE)
+          }
+          invisible(addTaskCallback(function(expr, value, ok, visible) {
+            try(save.image("/persist/.RData"), silent = TRUE)
+            TRUE
+          }, name = "aargh_autosave"))
+        `);
+
+        webRConsole.run();
+        webRConsole.stdin('swirl()\n');
+      } catch (err) {
+        appendLine('Boot error: ' + (err && err.message ? err.message : String(err)), 'line-stderr');
+      }
+    }
+
+    bootAaRgh();
+  </script>
+</body>
+</html>
