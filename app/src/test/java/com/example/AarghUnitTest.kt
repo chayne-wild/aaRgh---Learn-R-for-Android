@@ -20,7 +20,7 @@ class AarghUnitTest {
 
     @Test
     fun operatorModesContainRequiredSymbols() {
-        assertTrue(OperatorMode.R.symbols.containsAll(listOf("<-", "|>", "<", "-", "|", ">", "$")))
+        assertTrue(OperatorMode.R.symbols.containsAll(listOf("<", "-", "|", ">", "$", "(", ")", "[", "]")))
         assertTrue(OperatorMode.MATH.symbols.containsAll(listOf("<", ">", "=", "!", "&", "|", "%", "*")))
     }
 }

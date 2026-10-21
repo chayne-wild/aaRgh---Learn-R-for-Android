@@ -2,404 +2,330 @@
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
   <title>aaRgh — Offline R &amp; swirl</title>
   <style>
-    :root,
-    [data-theme="light"] {
-      --bg: #F8FAFC;
-      --panel: #FFFFFF;
-      --border: #CBD5E1;
-      --text: #0F172A;
+    /* Default: Sleek High-Contrast Light Mode */
+    :root, [data-theme="light"] {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --bar-bg: #f1f5f9;
+      --border: #cbd5e1;
+      --text: #0f172a;
       --muted: #475569;
-      --accent: #0284C7;
-      --accent-fg: #FFFFFF;
-      --cmd: #047857;
-      --err: #DC2626;
-      --chip-bg: #F1F5F9;
-      --var-chip-bg: #E0F2FE;
-      --var-chip-text: #0369A1;
-      --var-chip-border: #7DD3FC;
-      --op-bar-bg: #F1F5F9;
-      --continue-bg: #E0F2FE;
-      --badge-ok-bg: #DCFCE7;
-      --badge-ok-text: #166534;
+      --accent: #0284c7;
+      --accent-fg: #ffffff;
+      --cmd: #15803d;
+      --prompt-bg: #e0f2fe;
+      --prompt-fg: #0369a1;
+      --err: #dc2626;
+      --chip-bg: #e2e8f0;
+      --chip-fg: #0f172a;
+      --key-bg: #ffffff;
     }
 
+    /* Optional Dark Mode */
     [data-theme="dark"] {
-      --bg: #0F1419;
+      --bg: #0f1419;
       --panel: #182026;
-      --border: #2A3540;
-      --text: #E6EDF3;
-      --muted: #8B949E;
-      --accent: #38BDF8;
-      --accent-fg: #0F172A;
-      --cmd: #7EE787;
-      --err: #FF7B72;
-      --chip-bg: #212C35;
-      --var-chip-bg: #1F2D3D;
-      --var-chip-text: #79C0FF;
-      --var-chip-border: #30465E;
-      --op-bar-bg: #12181F;
-      --continue-bg: #1D2D3E;
-      --badge-ok-bg: #132F20;
-      --badge-ok-text: #7EE787;
+      --bar-bg: #12181f;
+      --border: #2a3540;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #38bdf8;
+      --accent-fg: #000000;
+      --cmd: #4ade80;
+      --prompt-bg: #1e293b;
+      --prompt-fg: #7dd3fc;
+      --err: #f87171;
+      --chip-bg: #212c35;
+      --chip-fg: #79c0ff;
+      --key-bg: #212c35;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     html, body {
       background: var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      height: 100dvh;
+      font-family: system-ui, -apple-system, Roboto, sans-serif;
       width: 100%;
+      height: 100dvh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
-    /* Single-row non-wrapping Top App Bar */
+    /* Persistent Single-Row Top Bar (Never Wraps or Overlaps) */
     header {
       background: var(--panel);
       border-bottom: 1px solid var(--border);
-      padding: 6px 10px;
+      height: 44px;
+      padding: 0 10px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       flex-shrink: 0;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
     }
-    header::-webkit-scrollbar { display: none; }
-
     .brand-group {
       display: flex;
       align-items: center;
       gap: 6px;
       flex-shrink: 0;
     }
-
     .brand {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-family: ui-monospace, monospace;
       font-weight: 800;
       font-size: 1.05rem;
       color: var(--accent);
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      flex-shrink: 0;
+      letter-spacing: -0.5px;
     }
-
-    .sab-badge {
-      font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: var(--badge-ok-bg);
-      color: var(--badge-ok-text);
-      white-space: nowrap;
-      flex-shrink: 0;
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f59e0b;
+      display: inline-block;
     }
+    .status-dot.ready { background: #16a34a; }
 
     .top-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
-      flex-wrap: nowrap;
-      flex-shrink: 0;
+      gap: 5px;
       overflow-x: auto;
+      flex-wrap: nowrap;
+      white-space: nowrap;
       scrollbar-width: none;
+      padding: 2px 0;
     }
     .top-actions::-webkit-scrollbar { display: none; }
 
     .top-btn {
-      background: var(--chip-bg);
+      background: var(--bar-bg);
       color: var(--text);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 6px 10px;
-      min-height: 34px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.78rem;
+      height: 30px;
+      padding: 0 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.76rem;
       font-weight: 600;
       cursor: pointer;
-      white-space: nowrap;
       flex-shrink: 0;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      user-select: none;
     }
-    .top-btn:active {
-      background: var(--accent);
-      color: var(--accent-fg);
-      border-color: var(--accent);
-    }
-    .top-btn.plot-ready {
-      border-color: var(--accent);
-      color: var(--accent);
-      font-weight: 700;
-    }
-    .top-btn.active-toggle {
-      background: var(--accent);
-      color: var(--accent-fg);
-      border-color: var(--accent);
-    }
+    .top-btn:active { background: var(--accent); color: var(--accent-fg); }
+    .top-btn.plot-ready { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 
-    /* Console Transcript */
+    /* Scrollable Transcript Viewport */
     #transcript {
-      flex: 1;
-      min-height: 0;
+      flex: 1 1 auto;
+      min-height: 60px;
       overflow-y: auto;
       padding: 10px 12px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       line-height: 1.45;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
-    .line-stdout {
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: var(--text);
-    }
-    .line-stderr {
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: var(--err);
-    }
-    .line-cmd {
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: var(--cmd);
+    .line-stdout { white-space: pre-wrap; word-break: break-word; color: var(--text); }
+    .line-stderr { white-space: pre-wrap; word-break: break-word; color: var(--err); font-weight: 500; }
+    .line-cmd { white-space: pre-wrap; word-break: break-word; color: var(--cmd); font-weight: 700; }
+    .line-prompt {
+      background: var(--prompt-bg);
+      color: var(--prompt-fg);
+      border-left: 3px solid var(--accent);
+      padding: 6px 10px;
+      border-radius: 4px;
       font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    /* Continue bar when swirl pauses at ... */
+    /* Interactive Menu Pill Buttons inside Transcript */
+    .menu-choice-btn {
+      align-self: flex-start;
+      background: var(--panel);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      max-width: 100%;
+    }
+    .menu-choice-btn:active {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
+
+    /* 1-Tap Continue Bar for swirl "..." pauses */
     #continue-bar {
       display: none;
-      background: var(--continue-bg);
+      background: var(--prompt-bg);
+      color: var(--prompt-fg);
       border-top: 1px solid var(--accent);
-      padding: 8px 12px;
+      padding: 7px 12px;
       text-align: center;
       cursor: pointer;
       font-weight: 700;
       font-size: 0.88rem;
-      color: var(--accent);
       flex-shrink: 0;
-      user-select: none;
     }
 
-    /* Sticky Bottom Dock: Var Chips + Input + Operator Bar */
+    /* Persistent Bottom Dock */
     .bottom-dock {
       background: var(--panel);
       border-top: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      width: 100%;
     }
 
+    /* Row 1: Dynamic Context Chips (Single non-overlapping horizontal scroll row) */
     #var-chips {
       display: flex;
-      flex-wrap: nowrap;
-      flex-shrink: 0;
+      align-items: center;
       gap: 6px;
       overflow-x: auto;
+      flex-wrap: nowrap;
+      white-space: nowrap;
       padding: 5px 10px;
       border-bottom: 1px solid var(--border);
+      background: var(--bar-bg);
       scrollbar-width: none;
-    }
-    #var-chips:empty {
-      display: none;
+      min-height: 34px;
     }
     #var-chips::-webkit-scrollbar { display: none; }
+    #var-chips:empty { display: none; }
 
     .var-chip {
-      background: var(--var-chip-bg);
-      color: var(--var-chip-text);
-      border: 1px solid var(--var-chip-border);
+      background: var(--chip-bg);
+      color: var(--chip-fg);
+      border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 4px 11px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.8rem;
+      height: 24px;
+      padding: 0 10px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.78rem;
       font-weight: 600;
-      white-space: nowrap;
-      flex-shrink: 0;
       cursor: pointer;
-      user-select: none;
+      flex-shrink: 0;
     }
-    .var-chip:active {
-      background: var(--accent);
-      color: var(--accent-fg);
-    }
+    .var-chip:active { background: var(--accent); color: var(--accent-fg); }
 
+    /* Row 2: Native Keyboard / Gboard Swipe Input Row */
     .input-row {
       display: flex;
       align-items: center;
-      padding: 6px 10px;
-      gap: 8px;
-      flex-shrink: 0;
-      flex-wrap: nowrap;
+      padding: 6px 8px;
+      gap: 6px;
+      width: 100%;
     }
-
     #prompt-label {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-family: ui-monospace, monospace;
       color: var(--accent);
       font-weight: 800;
-      font-size: 1rem;
-      white-space: nowrap;
+      font-size: 0.95rem;
       flex-shrink: 0;
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-
     #r-input {
-      flex: 1;
+      flex: 1 1 auto;
       min-width: 0;
       background: var(--bg);
       color: var(--text);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 8px 10px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      height: 36px;
+      padding: 0 10px;
+      font-family: ui-monospace, monospace;
       font-size: 0.95rem;
       outline: none;
     }
-    #r-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.18);
-    }
+    #r-input:focus { border-color: var(--accent); border-width: 1.5px; }
 
     #send-btn {
       background: var(--accent);
       color: var(--accent-fg);
       border: none;
       border-radius: 6px;
-      padding: 8px 14px;
-      min-height: 36px;
+      height: 36px;
+      padding: 0 14px;
       font-weight: 700;
       font-size: 0.88rem;
       cursor: pointer;
       flex-shrink: 0;
-      white-space: nowrap;
-      user-select: none;
     }
 
-    /* Primitive Operator Toggle Bar (Single-Row Non-Wrapping) */
+    /* Row 3: Primitive R & Math Operator Bar (Single horizontal scroll row) */
     .op-bar {
       display: flex;
       align-items: center;
-      flex-wrap: nowrap;
-      flex-shrink: 0;
-      gap: 5px;
-      padding: 6px 8px;
+      gap: 4px;
+      padding: 5px 8px;
       overflow-x: auto;
-      background: var(--op-bar-bg);
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      background: var(--bar-bg);
       border-top: 1px solid var(--border);
       scrollbar-width: none;
     }
     .op-bar::-webkit-scrollbar { display: none; }
-    .op-bar.collapsed {
-      display: none !important;
-    }
+    .op-bar.hidden { display: none; }
 
     .mode-toggle {
       background: var(--accent);
       color: var(--accent-fg);
       border: none;
       border-radius: 5px;
-      padding: 6px 9px;
-      height: 34px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-weight: 800;
+      height: 32px;
+      padding: 0 9px;
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
       font-size: 0.78rem;
       cursor: pointer;
       flex-shrink: 0;
-      white-space: nowrap;
-      user-select: none;
     }
-
-    #op-keys-container {
-      display: flex;
-      align-items: center;
-      flex-wrap: nowrap;
-      flex-shrink: 0;
-      gap: 4px;
-    }
-
     .op-key {
-      background: var(--panel);
+      background: var(--key-bg);
       color: var(--text);
       border: 1px solid var(--border);
       border-radius: 5px;
-      min-width: 34px;
-      height: 34px;
-      padding: 0 8px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      min-width: 33px;
+      height: 32px;
+      padding: 0 6px;
+      font-family: ui-monospace, monospace;
       font-size: 0.95rem;
       font-weight: 700;
       cursor: pointer;
       flex-shrink: 0;
-      white-space: nowrap;
-      user-select: none;
     }
-    .op-key:active {
-      background: var(--accent);
-      color: var(--accent-fg);
-      border-color: var(--accent);
-    }
+    .op-key:active { background: var(--accent); color: var(--accent-fg); }
 
-    /* Landscape Orientation Compaction */
-    @media (orientation: landscape), (max-height: 480px) {
-      header {
-        padding: 3px 8px;
-        gap: 6px;
-      }
-      .top-btn {
-        padding: 3px 8px;
-        min-height: 28px;
-        font-size: 0.74rem;
-      }
-      #transcript {
-        padding: 6px 10px;
-        font-size: 0.86rem;
-        gap: 4px;
-      }
-      #var-chips {
-        padding: 3px 8px;
-      }
-      .var-chip {
-        padding: 2px 8px;
-        font-size: 0.74rem;
-      }
-      .input-row {
-        padding: 4px 8px;
-        gap: 6px;
-      }
-      #r-input {
-        padding: 5px 8px;
-        font-size: 0.88rem;
-      }
-      #send-btn {
-        padding: 5px 12px;
-        min-height: 30px;
-        font-size: 0.82rem;
-      }
-      .op-bar {
-        padding: 3px 8px;
-      }
-      .mode-toggle,
-      .op-key {
-        height: 28px;
-        min-width: 30px;
-        font-size: 0.84rem;
-      }
+    /* Landscape / Short Viewport Optimization */
+    @media (orientation: landscape) and (max-height: 520px) {
+      header { height: 36px; padding: 0 8px; }
+      .top-btn { height: 26px; font-size: 0.72rem; padding: 0 6px; }
+      #transcript { padding: 6px 10px; font-size: 0.84rem; gap: 4px; }
+      .input-row { padding: 4px 8px; }
+      #r-input, #send-btn { height: 30px; font-size: 0.86rem; }
+      .op-bar { padding: 3px 8px; }
+      .op-key, .mode-toggle { height: 28px; min-width: 28px; font-size: 0.85rem; }
+      #var-chips { padding: 3px 8px; min-height: 28px; }
     }
 
     /* Pop-Out Plot Modal Window with Pinch-to-Zoom */
@@ -407,7 +333,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.78);
+      background: rgba(0, 0, 0, 0.75);
       z-index: 100;
       align-items: center;
       justify-content: center;
@@ -416,14 +342,13 @@
     .modal-card {
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      max-width: 680px;
+      border-radius: 10px;
+      max-width: 600px;
       max-height: 92dvh;
       width: 100%;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
     }
     .modal-header {
       padding: 8px 12px;
@@ -433,39 +358,30 @@
       align-items: center;
       gap: 8px;
       font-weight: 700;
-      font-size: 0.9rem;
       flex-shrink: 0;
-      flex-wrap: nowrap;
-      overflow-x: auto;
     }
     .modal-controls {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       flex-shrink: 0;
-      flex-wrap: nowrap;
     }
     #plot-viewport {
-      position: relative;
       width: 100%;
-      aspect-ratio: 1 / 1;
-      max-height: calc(92dvh - 54px);
-      background: #FFFFFF;
+      max-height: calc(92dvh - 50px);
+      background: #ffffff;
       overflow: hidden;
       touch-action: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: grab;
-    }
-    #plot-viewport:active {
-      cursor: grabbing;
     }
     #plot-canvas {
       width: 100%;
-      height: 100%;
+      height: auto;
+      max-height: calc(92dvh - 50px);
       object-fit: contain;
-      background: #FFFFFF;
+      background: #ffffff;
       display: block;
       transform-origin: center center;
       will-change: transform;
@@ -475,30 +391,30 @@
 <body>
   <header>
     <div class="brand-group">
-      <div class="brand">aaRgh</div>
-      <span class="sab-badge" id="isolation-badge" title="Cross-Origin Isolated SharedArrayBuffer Status">OFFLINE</span>
+      <span class="status-dot" id="status-dot" title="Engine Status"></span>
+      <span class="brand">aaRgh</span>
     </div>
-    <div class="top-actions" role="toolbar" aria-label="R and swirl actions">
-      <button class="top-btn" type="button" data-cmd="swirl()">swirl()</button>
-      <button class="top-btn" type="button" data-cmd="play()">play()</button>
-      <button class="top-btn" type="button" data-cmd="nxt()">nxt()</button>
-      <button class="top-btn" type="button" data-cmd="skip()">skip()</button>
-      <button class="top-btn" type="button" data-cmd="main()">main()</button>
-      <button class="top-btn" type="button" data-cmd="bye()">bye()</button>
-      <button class="top-btn" type="button" id="plot-btn" onclick="togglePlotModal(true)">Plot</button>
-      <button class="top-btn active-toggle" type="button" id="keys-btn" onclick="toggleKeysBar()">Keys</button>
-      <button class="top-btn" type="button" id="theme-btn" onclick="toggleTheme()">Theme</button>
+    <div class="top-actions">
+      <button class="top-btn" onclick="sendCommand('swirl()')">swirl()</button>
+      <button class="top-btn" onclick="sendCommand('play()')">play()</button>
+      <button class="top-btn" onclick="sendCommand('nxt()')">nxt()</button>
+      <button class="top-btn" onclick="sendCommand('skip()')">skip()</button>
+      <button class="top-btn" onclick="sendCommand('main()')">main()</button>
+      <button class="top-btn" onclick="sendCommand('bye()')">bye()</button>
+      <button class="top-btn" id="plot-btn" onclick="togglePlotModal(true)">Plot</button>
+      <button class="top-btn" id="keys-btn" onclick="toggleKeysBar()">Keys</button>
+      <button class="top-btn" id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
     </div>
   </header>
 
-  <div id="transcript" role="log" aria-live="polite">
-    <div class="line-stdout" id="boot-status">Initializing offline Base R (webR) &amp; loading swirl courses...</div>
+  <div id="transcript">
+    <div class="line-stdout" id="boot-status">Booting offline Base R (webR) &amp; unpacking swirl courses...</div>
   </div>
 
   <div id="continue-bar" onclick="sendCommand('')">... Tap here or press Enter to Continue ...</div>
 
   <div class="bottom-dock">
-    <div id="var-chips" aria-label="Recent R identifiers"></div>
+    <div id="var-chips"></div>
     <div class="input-row">
       <span id="prompt-label">&gt;</span>
       <input
@@ -510,13 +426,13 @@
         spellcheck="false"
         inputmode="text"
         enterkeyhint="send"
-        placeholder="Type or swipe R command..."
+        placeholder="Wait for R engine..."
       />
-      <button id="send-btn" type="button" onclick="submitInput()">Send</button>
+      <button id="send-btn" onpointerdown="event.preventDefault(); submitInput()">Send</button>
     </div>
     <div class="op-bar" id="op-bar">
-      <button class="mode-toggle" id="mode-btn" type="button">[R]</button>
-      <div id="op-keys-container"></div>
+      <button class="mode-toggle" id="mode-btn" onpointerdown="event.preventDefault(); toggleOpMode()">[R]</button>
+      <div id="op-keys-container" style="display:flex; gap:4px; flex-wrap:nowrap;"></div>
     </div>
   </div>
 
@@ -540,38 +456,28 @@
   <script type="module">
     import { Console } from './webr/webr.mjs';
 
-    const R_KEYS    = ['<-', '|>', '<', '-', '|', '>', '$', '(', ')', '[', ']', '"', "'", ',', ':', '?', '_'];
+    // Logical grouping of primitive single characters (no redundant compound symbols)
+    const R_KEYS    = ['<', '-', '|', '>', '$', '(', ')', '[', ']', '"', "'", ',', ':', '?', '_'];
     const MATH_KEYS = ['<', '>', '=', '!', '&', '|', '%', '*', '+', '-', '/', '^', '~'];
     let currentMode = 'R';
-    let keysBarVisible = true;
+    let hasStartedSwirl = false;
     let isImeComposing = false;
+    let lastBacktickedTokens = new Set();
 
-    const transcript = document.getElementById('transcript');
-    const rInput = document.getElementById('r-input');
-    const promptLabel = document.getElementById('prompt-label');
-    const continueBar = document.getElementById('continue-bar');
-    const varChips = document.getElementById('var-chips');
-    const opBar = document.getElementById('op-bar');
-    const keysBtn = document.getElementById('keys-btn');
-    const themeBtn = document.getElementById('theme-btn');
-    const modeBtn = document.getElementById('mode-btn');
-    const plotModal = document.getElementById('plot-modal');
+    const transcript   = document.getElementById('transcript');
+    const rInput       = document.getElementById('r-input');
+    const promptLabel  = document.getElementById('prompt-label');
+    const continueBar  = document.getElementById('continue-bar');
+    const varChips     = document.getElementById('var-chips');
+    const plotModal    = document.getElementById('plot-modal');
     const plotViewport = document.getElementById('plot-viewport');
-    const plotCanvas = document.getElementById('plot-canvas');
-    const plotBtn = document.getElementById('plot-btn');
-    const zoomReadout = document.getElementById('zoom-readout');
-    const isolationBadge = document.getElementById('isolation-badge');
-    const lastBacktickedTokens = new Set();
+    const plotCanvas   = document.getElementById('plot-canvas');
+    const plotBtn      = document.getElementById('plot-btn');
+    const zoomReadout  = document.getElementById('zoom-readout');
+    const statusDot    = document.getElementById('status-dot');
 
-    // Update SAB / Cross-Origin Isolation badge
-    if (window.crossOriginIsolated) {
-      isolationBadge.textContent = 'SAB OK';
-    } else {
-      isolationBadge.textContent = 'OFFLINE';
-    }
-
-    // 1. Light Mode Default + Dark Mode Toggle persisted in SharedPreferences / localStorage
-    function getStoredTheme() {
+    // Theme Management (Light Default, persisted on-device in localStorage & SharedPreferences)
+    function loadInitialTheme() {
       try {
         if (window.AndroidBridge && typeof window.AndroidBridge.getThemeMode === 'function') {
           const nativeTheme = window.AndroidBridge.getThemeMode();
@@ -582,76 +488,41 @@
         const stored = localStorage.getItem('aargh_theme');
         if (stored === 'light' || stored === 'dark') return stored;
       } catch (e) {}
-      return 'light'; // Default to clean Light Mode
+      return 'light';
     }
 
-    function applyTheme(theme) {
+    function setTheme(theme) {
       const normalized = theme === 'dark' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', normalized);
-      themeBtn.textContent = normalized === 'dark' ? 'Light' : 'Dark';
-      try {
-        localStorage.setItem('aargh_theme', normalized);
-      } catch (e) {}
+      try { localStorage.setItem('aargh_theme', normalized); } catch (e) {}
       try {
         if (window.AndroidBridge && typeof window.AndroidBridge.setThemeMode === 'function') {
           window.AndroidBridge.setThemeMode(normalized);
         }
       } catch (e) {}
+      const btn = document.getElementById('theme-btn');
+      if (btn) btn.textContent = normalized === 'light' ? '🌙 Dark' : '☀️ Light';
     }
+
+    setTheme(loadInitialTheme());
 
     window.toggleTheme = () => {
-      const current = document.documentElement.getAttribute('data-theme') || 'light';
-      applyTheme(current === 'light' ? 'dark' : 'light');
+      const cur = document.documentElement.getAttribute('data-theme') || 'light';
+      setTheme(cur === 'light' ? 'dark' : 'light');
     };
-
-    applyTheme(getStoredTheme());
-
-    // 2. [Keys] Bar Collapse/Expand Toggle
-    function applyKeysVisibility(visible) {
-      keysBarVisible = visible;
-      if (keysBarVisible) {
-        opBar.classList.remove('collapsed');
-        keysBtn.classList.add('active-toggle');
-      } else {
-        opBar.classList.add('collapsed');
-        keysBtn.classList.remove('active-toggle');
-      }
-      try {
-        localStorage.setItem('aargh_keys_visible', keysBarVisible ? '1' : '0');
-      } catch (e) {}
-    }
 
     window.toggleKeysBar = () => {
-      applyKeysVisibility(!keysBarVisible);
+      document.getElementById('op-bar').classList.toggle('hidden');
     };
 
-    try {
-      const savedKeys = localStorage.getItem('aargh_keys_visible');
-      if (savedKeys !== null) {
-        applyKeysVisibility(savedKeys === '1');
-      }
-    } catch (e) {}
-
-    // Top bar command buttons
-    document.querySelectorAll('.top-btn[data-cmd]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const cmd = btn.getAttribute('data-cmd');
-        if (cmd) window.sendCommand(cmd);
-      });
-    });
-
-    // 3. Native Phone Keyboard, Gboard & Swipe/Glide Typing Integration
-    // Never interrupt IME composition (isComposing)
-    function normalizeSmartQuotesIfIdle() {
+    // Preserve Gboard Swipe / Glide Composition while normalizing curly smart quotes
+    function normalizeSmartQuotes() {
       if (isImeComposing) return;
-      const val = rInput.value;
-      if (!/[\u2018\u2019\u201C\u201D]/.test(val)) return;
-      const start = rInput.selectionStart ?? val.length;
-      const end = rInput.selectionEnd ?? val.length;
-      rInput.value = val.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
-      try {
-        rInput.setSelectionRange(start, end);
-      } catch (e) {}
+      if (/[\u2018\u2019\u201C\u201D]/.test(rInput.value)) {
+        const pos = rInput.selectionStart;
+        rInput.value = rInput.value.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+        try { rInput.setSelectionRange(pos, pos); } catch (e) {}
+      }
     }
 
     rInput.addEventListener('compositionstart', () => {
@@ -660,113 +531,55 @@
 
     rInput.addEventListener('compositionend', () => {
       isImeComposing = false;
-      normalizeSmartQuotesIfIdle();
+      normalizeSmartQuotes();
     });
 
     rInput.addEventListener('input', (e) => {
       if (e.isComposing || isImeComposing) return;
-      normalizeSmartQuotesIfIdle();
+      normalizeSmartQuotes();
     });
 
     rInput.addEventListener('keydown', (e) => {
-      if (e.isComposing || isImeComposing || e.keyCode === 229) return;
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.isComposing && !isImeComposing) {
         e.preventDefault();
-        window.submitInput();
+        submitInput();
       }
-    });
-
-    // Keep keyboard focused when tapping mode toggle, operator keys, or variable chips
-    function bindFocusPreservingTap(element, callback) {
-      let handledByPointerDown = false;
-      element.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        handledByPointerDown = true;
-        callback();
-      });
-      element.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-      });
-      element.addEventListener('click', (e) => {
-        if (handledByPointerDown) {
-          handledByPointerDown = false;
-          return;
-        }
-        callback();
-      });
-    }
-
-    bindFocusPreservingTap(modeBtn, () => {
-      currentMode = currentMode === 'R' ? 'Math' : 'R';
-      modeBtn.textContent = `[${currentMode}]`;
-      renderOpKeys();
     });
 
     function renderOpKeys() {
       const container = document.getElementById('op-keys-container');
       container.innerHTML = '';
       const keys = currentMode === 'R' ? R_KEYS : MATH_KEYS;
-      keys.forEach((k) => {
+      keys.forEach(k => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'op-key';
         btn.textContent = k;
-        bindFocusPreservingTap(btn, () => {
-          window.insertAtCursor(k);
-        });
+        btn.onpointerdown = (e) => {
+          e.preventDefault(); // Prevent losing keyboard/Gboard focus
+          insertAtCursor(k);
+        };
         container.appendChild(btn);
       });
     }
 
-    window.insertAtCursor = (text) => {
-      const start = rInput.selectionStart ?? rInput.value.length;
-      const end = rInput.selectionEnd ?? rInput.value.length;
-      const val = rInput.value;
-      rInput.value = val.slice(0, start) + text + val.slice(end);
-      const nextPos = start + text.length;
-      try {
-        rInput.setSelectionRange(nextPos, nextPos);
-      } catch (e) {}
-      rInput.focus({ preventScroll: true });
+    window.toggleOpMode = () => {
+      currentMode = currentMode === 'R' ? 'Math' : 'R';
+      document.getElementById('mode-btn').textContent = `[${currentMode}]`;
+      renderOpKeys();
     };
 
-    function renderVarChips() {
-      varChips.innerHTML = '';
-      Array.from(lastBacktickedTokens).slice(-14).forEach((token) => {
-        const chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'var-chip';
-        chip.textContent = token;
-        bindFocusPreservingTap(chip, () => {
-          window.insertAtCursor(token);
-        });
-        varChips.appendChild(chip);
-      });
-    }
+    window.insertAtCursor = (text) => {
+      const start = rInput.selectionStart ?? rInput.value.length;
+      const end   = rInput.selectionEnd ?? rInput.value.length;
+      const val   = rInput.value;
+      rInput.value = val.slice(0, start) + text + val.slice(end);
+      const nextPos = start + text.length;
+      try { rInput.setSelectionRange(nextPos, nextPos); } catch (e) {}
+      rInput.focus();
+    };
 
-    function appendLine(text, cls = 'line-stdout') {
-      const div = document.createElement('div');
-      div.className = cls;
-      div.textContent = text;
-      transcript.appendChild(div);
-      transcript.scrollTop = transcript.scrollHeight;
-
-      // Extract `identifier` or 'identifier' mentioned in swirl prompts for 1-tap chips
-      const matches = text.match(/[`']([a-zA-Z0-9_.]+)[`']/g);
-      if (matches) {
-        matches.forEach((m) => {
-          const clean = m.slice(1, -1);
-          if (clean.length > 1 && !clean.includes(' ')) {
-            lastBacktickedTokens.add(clean);
-          }
-        });
-        renderVarChips();
-      }
-    }
-
-    renderOpKeys();
-
-    // 4. Pop-Out Plot Modal with Pinch-to-Zoom & Pan
+    // Pop-Out Plot Modal with Pinch-to-Zoom & Pan
     let plotScale = 1;
     let plotTranslateX = 0;
     let plotTranslateY = 0;
@@ -783,7 +596,7 @@
         plotTranslateY = 0;
       }
       plotCanvas.style.transform = `translate(${plotTranslateX}px, ${plotTranslateY}px) scale(${plotScale})`;
-      zoomReadout.textContent = `${Math.round(plotScale * 100)}%`;
+      if (zoomReadout) zoomReadout.textContent = `${Math.round(plotScale * 100)}%`;
     }
 
     window.resetPlotZoom = () => {
@@ -800,9 +613,7 @@
 
     window.togglePlotModal = (show) => {
       plotModal.style.display = show ? 'flex' : 'none';
-      if (show) {
-        updatePlotTransform();
-      }
+      if (show) updatePlotTransform();
     };
 
     function getPointerDistance(p1, p2) {
@@ -841,13 +652,11 @@
 
     function handlePointerUp(e) {
       activePointers.delete(e.pointerId);
-      if (activePointers.size < 2) {
-        initialPinchDistance = null;
-      }
+      if (activePointers.size < 2) initialPinchDistance = null;
       if (activePointers.size === 1) {
-        const remaining = Array.from(activePointers.values())[0];
-        lastPanX = remaining.clientX;
-        lastPanY = remaining.clientY;
+        const rem = Array.from(activePointers.values())[0];
+        lastPanX = rem.clientX;
+        lastPanY = rem.clientY;
       } else {
         lastPanX = null;
         lastPanY = null;
@@ -858,27 +667,88 @@
     plotViewport.addEventListener('pointercancel', handlePointerUp);
     plotViewport.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.2 : -0.2;
-      window.adjustPlotZoom(delta);
+      window.adjustPlotZoom(e.deltaY < 0 ? 0.2 : -0.2);
     }, { passive: false });
 
-    // Initialize white plot canvas
-    {
-      const ctx = plotCanvas.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, plotCanvas.width, plotCanvas.height);
+    function appendLine(text, cls = 'line-stdout') {
+      if (!text && cls !== 'line-cmd') return;
+      const trimmed = text.trim();
+
+      // Render numbered menu items (e.g. "1: R Programming") as clickable pill buttons
+      const menuMatch = trimmed.match(/^(\d+):\s+(.+)$/);
+      if (menuMatch && cls === 'line-stdout') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'menu-choice-btn';
+        btn.textContent = trimmed;
+        btn.onclick = () => sendCommand(menuMatch[1]);
+        transcript.appendChild(btn);
+        transcript.scrollTop = transcript.scrollHeight;
+        return;
+      }
+
+      const div = document.createElement('div');
+      div.className = cls;
+      div.textContent = text;
+      transcript.appendChild(div);
+      transcript.scrollTop = transcript.scrollHeight;
+
+      // Extract backticked or single-quoted R identifiers for 1-tap chips
+      const matches = text.match(/[`']([a-zA-Z][a-zA-Z0-9_.]*)[`']/g);
+      if (matches) {
+        matches.forEach(m => {
+          const clean = m.slice(1, -1);
+          if (clean.length > 1) lastBacktickedTokens.add(clean);
+        });
+        renderVarChips();
+      }
     }
 
-    // 5. Initialize webR Console pointing to local ./webr/ folder
+    function renderVarChips() {
+      varChips.innerHTML = '';
+      Array.from(lastBacktickedTokens).slice(-14).forEach(token => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'var-chip';
+        chip.textContent = token;
+        chip.onpointerdown = (e) => {
+          e.preventDefault();
+          insertAtCursor(token);
+        };
+        varChips.appendChild(chip);
+      });
+    }
+
+    renderOpKeys();
+
     const webRConsole = new Console({
       stdout: (line) => appendLine(line, 'line-stdout'),
       stderr: (line) => appendLine(line, 'line-stderr'),
       prompt: (p) => {
-        const trimmed = p.trim() || '>';
-        promptLabel.textContent = trimmed;
-        if (trimmed === '...') {
+        const cleanP = p.trim();
+
+        // Auto-start swirl() once R emits its first ready prompt
+        if (!hasStartedSwirl) {
+          hasStartedSwirl = true;
+          statusDot.classList.add('ready');
+          rInput.placeholder = 'Type or swipe R command...';
+          webRConsole.stdin('swirl()\n');
+          return;
+        }
+
+        if (cleanP === '...') {
+          promptLabel.textContent = '...';
+          rInput.placeholder = 'Press Enter or tap Continue...';
           continueBar.style.display = 'block';
+        } else if (cleanP && cleanP !== '>' && cleanP !== '+') {
+          // Display readline() questions (like "What shall I call you?" or "Selection:") in the transcript
+          appendLine(cleanP, 'line-prompt');
+          promptLabel.textContent = '?';
+          rInput.placeholder = cleanP;
+          continueBar.style.display = 'none';
         } else {
+          promptLabel.textContent = cleanP || '>';
+          rInput.placeholder = 'Type or swipe R command...';
           continueBar.style.display = 'none';
         }
         transcript.scrollTop = transcript.scrollHeight;
@@ -887,7 +757,7 @@
         const ctx = plotCanvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         plotBtn.classList.add('plot-ready');
-        window.togglePlotModal(true);
+        togglePlotModal(true);
       },
       canvasNewPage: () => {
         const ctx = plotCanvas.getContext('2d');
@@ -899,156 +769,61 @@
     });
 
     window.sendCommand = (cmd) => {
-      appendLine(`${promptLabel.textContent} ${cmd}`, 'line-cmd');
+      if (cmd !== '') {
+        appendLine(`${promptLabel.textContent} ${cmd}`, 'line-cmd');
+      }
       continueBar.style.display = 'none';
       webRConsole.stdin(cmd + '\n');
     };
 
     window.submitInput = () => {
-      normalizeSmartQuotesIfIdle();
+      normalizeSmartQuotes();
       const cmd = rInput.value;
       rInput.value = '';
       window.sendCommand(cmd);
     };
 
-    async function ensureDirRecursive(FS, dirPath) {
-      const parts = dirPath.split('/').filter(Boolean);
-      let current = '';
-      for (const part of parts) {
-        current += '/' + part;
-        try {
-          await FS.mkdir(current);
-        } catch (e) {}
-      }
-    }
-
-    // Unpack POSIX ustar aargh_payload.tar into /persist/aargh_bundle
-    async function unpackTarArchive(FS, arrayBuffer, baseDir) {
-      const bytes = new Uint8Array(arrayBuffer);
-      const decoder = new TextDecoder('utf-8');
-      let offset = 0;
-      let count = 0;
-
-      const readCString = (start, length) => {
-        let end = start;
-        const max = start + length;
-        while (end < max && bytes[end] !== 0) end++;
-        return decoder.decode(bytes.subarray(start, end)).trim();
-      };
-
-      while (offset + 512 <= bytes.length) {
-        const name = readCString(offset, 100);
-        if (!name) {
-          offset += 512;
-          continue;
-        }
-        const sizeOctal = readCString(offset + 124, 12);
-        const size = parseInt(sizeOctal, 8) || 0;
-        const typeFlag = bytes[offset + 156];
-        const prefix = readCString(offset + 345, 155);
-        const fullRelPath = (prefix ? `${prefix}/${name}` : name).replace(/^\.?\//, '');
-        const targetPath = `${baseDir}/${fullRelPath}`.replace(/\/+/g, '/');
-
-        offset += 512;
-
-        if (typeFlag === 53 || targetPath.endsWith('/')) {
-          await ensureDirRecursive(FS, targetPath.replace(/\/$/, ''));
-        } else if (typeFlag === 0 || typeFlag === 48) {
-          const lastSlash = targetPath.lastIndexOf('/');
-          if (lastSlash > 0) {
-            await ensureDirRecursive(FS, targetPath.slice(0, lastSlash));
-          }
-          const fileData = bytes.slice(offset, offset + size);
-          await FS.writeFile(targetPath, fileData);
-          count++;
-        }
-
-        offset += Math.ceil(size / 512) * 512;
-      }
-      return count;
-    }
-
-    async function populateBundleViaManifest(FS, baseDir) {
-      const manifestResp = await fetch('./vfs_manifest.json');
-      const files = await manifestResp.json();
-      for (const relPath of files) {
-        const targetPath = `${baseDir}/${relPath}`;
-        const lastSlash = targetPath.lastIndexOf('/');
-        if (lastSlash > 0) {
-          await ensureDirRecursive(FS, targetPath.slice(0, lastSlash));
-        }
-        const fileResp = await fetch('./' + relPath);
-        const buf = new Uint8Array(await fileResp.arrayBuffer());
-        await FS.writeFile(targetPath, buf);
-      }
-      const engineResp = await fetch('./swirl_offline_engine.R');
-      const engineBuf = new Uint8Array(await engineResp.arrayBuffer());
-      await FS.writeFile(`${baseDir}/swirl_offline_engine.R`, engineBuf);
-    }
-
     async function bootAaRgh() {
-      const bootStatus = document.getElementById('boot-status');
       try {
         await webRConsole.webR.init();
         const FS = webRConsole.webR.FS;
 
-        // Mount /persist via Emscripten IDBFS for persistent swirl progress & workspace
+        // Mount on-device IDBFS at /persist so swirl progress stays on the phone
         try { await FS.mkdir('/persist'); } catch (e) {}
         try {
           await FS.mount('IDBFS', {}, '/persist');
           await FS.syncfs(true);
-        } catch (idbErr) {
-          console.warn('IDBFS mount warning (continuing with VFS):', idbErr);
-        }
+        } catch (e) {}
 
-        try { await FS.mkdir('/persist/aargh_bundle'); } catch (e) {}
-        try { await FS.mkdir('/persist/user_data'); } catch (e) {}
+        // Fetch single tar bundle and unpack inside Base R
+        const resp = await fetch('./aargh_payload.tar');
+        if (!resp.ok) throw new Error('Could not fetch aargh_payload.tar');
+        const buf = new Uint8Array(await resp.arrayBuffer());
+        await FS.writeFile('/tmp/aargh_payload.tar', buf);
 
-        // Load from pre-built aargh_payload.tar (with fallback to vfs_manifest.json)
-        let loadedFromTar = false;
-        try {
-          const tarResp = await fetch('./aargh_payload.tar');
-          if (tarResp.ok) {
-            const tarBuf = await tarResp.arrayBuffer();
-            const extractedCount = await unpackTarArchive(FS, tarBuf, '/persist/aargh_bundle');
-            if (extractedCount > 0) {
-              loadedFromTar = true;
-            }
-          }
-        } catch (tarErr) {
-          console.warn('Fallback to vfs_manifest.json:', tarErr);
-        }
-
-        if (!loadedFromTar) {
-          await populateBundleViaManifest(FS, '/persist/aargh_bundle');
-        }
-
-        try { await FS.syncfs(false); } catch (e) {}
-
-        bootStatus.textContent = 'aaRgh Offline R Engine Ready.';
-
-        // Configure graphics device, persistent swirl_data_dir, & load swirl_offline_engine.R
         await webRConsole.webR.evalRVoid(`
+          options(device = webr::canvas)
+          dir.create("/persist/aargh_bundle", recursive = TRUE, showWarnings = FALSE)
+          dir.create("/persist/user_data", recursive = TRUE, showWarnings = FALSE)
           options(
-            device = webr::canvas,
             swirl_data_dir = "/persist/user_data",
             swirl_courses_dir = "/persist/aargh_bundle/courses"
           )
+          utils::untar("/tmp/aargh_payload.tar", exdir = "/persist/aargh_bundle")
+          unlink("/tmp/aargh_payload.tar")
           .aargh_root <- "/persist/aargh_bundle"
           source("/persist/aargh_bundle/swirl_offline_engine.R")
-          if (file.exists("/persist/.RData")) {
-            try(load("/persist/.RData", envir = .GlobalEnv), silent = TRUE)
-          }
-          invisible(addTaskCallback(function(expr, value, ok, visible) {
-            try(save.image("/persist/.RData"), silent = TRUE)
-            TRUE
-          }, name = "aargh_autosave"))
         `);
 
+        try { await FS.syncfs(false); } catch (e) {}
+
+        document.getElementById('boot-status').textContent =
+          'Offline Base R Ready (' + (window.crossOriginIsolated ? 'SharedArrayBuffer Active' : 'Standard Mode') + '). Starting swirl...';
+
+        // Start the interactive R Console loop
         webRConsole.run();
-        webRConsole.stdin('swirl()\n');
       } catch (err) {
-        appendLine('Boot error: ' + (err && err.message ? err.message : String(err)), 'line-stderr');
+        appendLine('Startup Error: ' + (err && err.message ? err.message : String(err)), 'line-stderr');
       }
     }
 

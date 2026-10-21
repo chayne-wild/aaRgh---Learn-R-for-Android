@@ -3,7 +3,7 @@ package com.example.model
 enum class OperatorMode(val label: String, val symbols: List<String>) {
     R(
         label = "[R]",
-        symbols = listOf("<-", "|>", "<", "-", "|", ">", "$", "(", ")", "[", "]", "\"", "'", ",", ":", "?", "_")
+        symbols = listOf("<", "-", "|", ">", "$", "(", ")", "[", "]", "\"", "'", ",", ":", "?", "_")
     ),
     MATH(
         label = "[Math]",
