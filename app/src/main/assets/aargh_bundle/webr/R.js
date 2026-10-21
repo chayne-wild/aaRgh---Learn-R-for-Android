@@ -9,9 +9,11 @@ let loadFile = function(dir, file, src) {
   }
   fsPathCache.push(`${dir}/${file}`);
 
-  let fn = ENVIRONMENT_IS_NODE ? FS.createPreloadedFile : FS.createLazyFile;
-  FS.mkdirTree(dir);
-  fn(dir, file, Module.locateFile(src), true, true);
+  try {
+    let fn = ENVIRONMENT_IS_NODE ? FS.createPreloadedFile : FS.createLazyFile;
+    FS.mkdirTree(dir);
+    fn(dir, file, Module.locateFile(src), true, true);
+  } catch (e) {}
 }
 
 // Lazy load a file from an Emscripten FS image
@@ -29,20 +31,23 @@ let loadImage = function(dir, file, src, mountpoint) {
       return true;
     }
 
-    if (ENVIRONMENT_IS_NODE) {
-      Module.mountImagePath(Module.locateFile(src), mountpoint);
-
-      let mountNode = Module.FS.lookupPath(`${dir}/${file}`).node;
-      node.contents = mountNode.contents;
-      node.size = mountNode.size;
-    } else {
-      Module.mountImageUrl(Module.locateFile(src), mountpoint);
-
-      let mountNode = Module.FS.lookupPath(`${dir}/${file}`).node;
-      node.contents = new Uint8Array(
-        (new FileReaderSync()).readAsArrayBuffer(mountNode.contents)
-      );
-      node.size = mountNode.size;
+    try {
+      if (ENVIRONMENT_IS_NODE) {
+        Module.mountImagePath(Module.locateFile(src), mountpoint);
+        let mountNode = Module.FS.lookupPath(`${dir}/${file}`).node;
+        node.contents = mountNode.contents;
+        node.size = mountNode.size;
+      } else {
+        Module.mountImageUrl(Module.locateFile(src), mountpoint);
+        let mountNode = Module.FS.lookupPath(`${dir}/${file}`).node;
+        node.contents = new Uint8Array(
+          (new FileReaderSync()).readAsArrayBuffer(mountNode.contents)
+        );
+        node.size = mountNode.size;
+      }
+    } catch (e) {
+      node.contents = new Uint8Array(0);
+      node.size = 0;
     }
   }
 

@@ -56,6 +56,15 @@
       flex-direction: column;
     }
 
+    /* Disabled / Boot-Locked Controls */
+    button:disabled,
+    input:disabled,
+    .boot-locked {
+      opacity: 0.45 !important;
+      pointer-events: none !important;
+      cursor: not-allowed !important;
+    }
+
     /* Persistent Single-Row Top Bar (Never Wraps or Overlaps) */
     header {
       background: var(--panel);
@@ -395,12 +404,12 @@
       <span class="brand">aaRgh</span>
     </div>
     <div class="top-actions">
-      <button class="top-btn" onclick="sendCommand('swirl()')">swirl()</button>
-      <button class="top-btn" onclick="sendCommand('play()')">play()</button>
-      <button class="top-btn" onclick="sendCommand('nxt()')">nxt()</button>
-      <button class="top-btn" onclick="sendCommand('skip()')">skip()</button>
-      <button class="top-btn" onclick="sendCommand('main()')">main()</button>
-      <button class="top-btn" onclick="sendCommand('bye()')">bye()</button>
+      <button class="top-btn cmd-btn" disabled onclick="sendCommand('swirl()')">swirl()</button>
+      <button class="top-btn cmd-btn" disabled onclick="sendCommand('play()')">play()</button>
+      <button class="top-btn cmd-btn" disabled onclick="sendCommand('nxt()')">nxt()</button>
+      <button class="top-btn cmd-btn" disabled onclick="sendCommand('skip()')">skip()</button>
+      <button class="top-btn cmd-btn" disabled onclick="sendCommand('main()')">main()</button>
+      <button class="top-btn cmd-btn" disabled onclick="sendCommand('bye()')">bye()</button>
       <button class="top-btn" id="plot-btn" onclick="togglePlotModal(true)">Plot</button>
       <button class="top-btn" id="keys-btn" onclick="toggleKeysBar()">Keys</button>
       <button class="top-btn" id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
@@ -420,6 +429,7 @@
       <input
         id="r-input"
         type="text"
+        disabled
         autocapitalize="none"
         autocomplete="off"
         autocorrect="off"
@@ -428,10 +438,10 @@
         enterkeyhint="send"
         placeholder="Wait for R engine..."
       />
-      <button id="send-btn" onpointerdown="event.preventDefault(); submitInput()">Send</button>
+      <button id="send-btn" disabled onpointerdown="event.preventDefault(); submitInput()">Send</button>
     </div>
     <div class="op-bar" id="op-bar">
-      <button class="mode-toggle" id="mode-btn" onpointerdown="event.preventDefault(); toggleOpMode()">[R]</button>
+      <button class="mode-toggle" id="mode-btn" disabled onpointerdown="event.preventDefault(); toggleOpMode()">[R]</button>
       <div id="op-keys-container" style="display:flex; gap:4px; flex-wrap:nowrap;"></div>
     </div>
   </div>
@@ -460,12 +470,15 @@
     const R_KEYS    = ['<', '-', '|', '>', '$', '(', ')', '[', ']', '"', "'", ',', ':', '?', '_'];
     const MATH_KEYS = ['<', '>', '=', '!', '&', '|', '%', '*', '+', '-', '/', '^', '~'];
     let currentMode = 'R';
+    let isEngineReady = false;
     let hasStartedSwirl = false;
     let isImeComposing = false;
     let lastBacktickedTokens = new Set();
 
     const transcript   = document.getElementById('transcript');
     const rInput       = document.getElementById('r-input');
+    const sendBtn      = document.getElementById('send-btn');
+    const modeBtn      = document.getElementById('mode-btn');
     const promptLabel  = document.getElementById('prompt-label');
     const continueBar  = document.getElementById('continue-bar');
     const varChips     = document.getElementById('var-chips');
@@ -475,6 +488,24 @@
     const plotBtn      = document.getElementById('plot-btn');
     const zoomReadout  = document.getElementById('zoom-readout');
     const statusDot    = document.getElementById('status-dot');
+
+    // Lock / Unlock all input & command controls based on engine readiness
+    function setEngineReady(ready) {
+      isEngineReady = ready;
+      rInput.disabled = !ready;
+      sendBtn.disabled = !ready;
+      modeBtn.disabled = !ready;
+      document.querySelectorAll('.cmd-btn, .op-key, .var-chip').forEach((btn) => {
+        btn.disabled = !ready;
+      });
+      if (ready) {
+        statusDot.classList.add('ready');
+        rInput.placeholder = 'Type or swipe R command...';
+      } else {
+        statusDot.classList.remove('ready');
+        rInput.placeholder = 'Wait for R engine...';
+      }
+    }
 
     // Theme Management (Light Default, persisted on-device in localStorage & SharedPreferences)
     function loadInitialTheme() {
@@ -554,9 +585,11 @@
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'op-key';
+        btn.disabled = !isEngineReady;
         btn.textContent = k;
         btn.onpointerdown = (e) => {
           e.preventDefault(); // Prevent losing keyboard/Gboard focus
+          if (!isEngineReady) return;
           insertAtCursor(k);
         };
         container.appendChild(btn);
@@ -564,12 +597,14 @@
     }
 
     window.toggleOpMode = () => {
+      if (!isEngineReady) return;
       currentMode = currentMode === 'R' ? 'Math' : 'R';
-      document.getElementById('mode-btn').textContent = `[${currentMode}]`;
+      modeBtn.textContent = `[${currentMode}]`;
       renderOpKeys();
     };
 
     window.insertAtCursor = (text) => {
+      if (!isEngineReady) return;
       const start = rInput.selectionStart ?? rInput.value.length;
       const end   = rInput.selectionEnd ?? rInput.value.length;
       const val   = rInput.value;
@@ -710,9 +745,11 @@
         const chip = document.createElement('button');
         chip.type = 'button';
         chip.className = 'var-chip';
+        chip.disabled = !isEngineReady;
         chip.textContent = token;
         chip.onpointerdown = (e) => {
           e.preventDefault();
+          if (!isEngineReady) return;
           insertAtCursor(token);
         };
         varChips.appendChild(chip);
@@ -720,6 +757,7 @@
     }
 
     renderOpKeys();
+    setEngineReady(false);
 
     const webRConsole = new Console({
       stdout: (line) => appendLine(line, 'line-stdout'),
@@ -727,11 +765,10 @@
       prompt: (p) => {
         const cleanP = p.trim();
 
-        // Auto-start swirl() once R emits its first ready prompt
+        // Unlock controls and auto-start swirl() once R emits its first ready prompt
         if (!hasStartedSwirl) {
           hasStartedSwirl = true;
-          statusDot.classList.add('ready');
-          rInput.placeholder = 'Type or swipe R command...';
+          setEngineReady(true);
           webRConsole.stdin('swirl()\n');
           return;
         }
@@ -765,10 +802,11 @@
         ctx.fillRect(0, 0, plotCanvas.width, plotCanvas.height);
       }
     }, {
-      baseUrl: './webr/'
+      baseUrl: new URL('./webr/', window.location.href).href
     });
 
     window.sendCommand = (cmd) => {
+      if (!isEngineReady) return;
       if (cmd !== '') {
         appendLine(`${promptLabel.textContent} ${cmd}`, 'line-cmd');
       }
@@ -777,6 +815,7 @@
     };
 
     window.submitInput = () => {
+      if (!isEngineReady) return;
       normalizeSmartQuotes();
       const cmd = rInput.value;
       rInput.value = '';

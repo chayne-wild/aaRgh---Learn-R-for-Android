@@ -85,8 +85,16 @@ object AarghWebViewHolder {
                     view: WebView,
                     request: WebResourceRequest
                 ): WebResourceResponse? {
-                    val response = assetLoader.shouldInterceptRequest(request.url) ?: return null
-                    val path = request.url.path.orEmpty().lowercase()
+                    val rawUrl = request.url
+                    val normalizedUrl = if (rawUrl.path?.contains("/webr/webr/") == true) {
+                        rawUrl.buildUpon()
+                            .path(rawUrl.path!!.replace("/webr/webr/", "/webr/"))
+                            .build()
+                    } else {
+                        rawUrl
+                    }
+                    val response = assetLoader.shouldInterceptRequest(normalizedUrl) ?: return null
+                    val path = normalizedUrl.path.orEmpty().lowercase()
 
                     // Ensure accurate MIME types for ES modules, WebAssembly, and R bundle archives
                     when {
